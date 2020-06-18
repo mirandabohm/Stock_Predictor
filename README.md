@@ -24,3 +24,8 @@ The goal is to gainful useful insights pertaining to Q2 and Q3 trends which have
 
 ## Project Structure
 Datasets will be contained in a subdirectory named 'data.'
+
+## See Also:
+Zou, Zhichao, and Qu, Zihao. "Using LSTM in Stock prediction and Quantitative Trading." 
+http://cs230.stanford.edu/projects_winter_2020/reports/32066186.pdf
+

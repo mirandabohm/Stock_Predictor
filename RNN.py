@@ -10,6 +10,7 @@ import matplotlib.dates as mdates
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
 from time import strptime
+from math import ceil
 
 # Load data 
 file = r'all_stocks_2006-01-01_to_2018-01-01' + '.csv'
@@ -50,13 +51,18 @@ if data.isna().sum():
 
 # Convert data into format acceptable to Keras
 # Input must be 3D ndarray of shape (samples x time steps x features)
-test_fraction = 0.80
 data = data.to_numpy()
 
-# Define data
-x_train = 0;
-y_train = 0;
+sequence_length = 30
 
+#Define test set 
+test_fraction = 0.80
+num_test_samples = ceil(len(data) * test_fraction)
+x_train = np.array([data[i - sequence_length] for i in range(sequence_length, num_test_samples)])
+y_train = np.array([data[i] for i in range(sequence_length, num_test_samples)])
+
+
+'''
 # Build model 
 units = 32
 epochs = 25
@@ -83,3 +89,4 @@ model.fit(x_train,
 # Build model 
 
 # Evaluate performance 
+'''

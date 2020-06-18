@@ -13,37 +13,25 @@ from time import strptime
 from math import ceil
 
 # Load data 
-file = r'all_stocks_2006-01-01_to_2018-01-01' + '.csv'
+file = r'DJIA_historical' + '.csv'
 dirname = os.path.dirname(__file__)
 filename = os.path.join((dirname), 'data/' +file)
-
 df = pd.read_csv(filename)
-tickers = df.Name.unique().tolist()
 
 # Visualize the total dataset
-for ticker in tickers: 
-    data = df[df.Name.eq(ticker)]
-    dates = df['Date'][:len(data)]
-    adj_dates = mdates.datestr2num(dates)
-    plt.plot_date(adj_dates, data['Close'], '-')
+data = df['Close']
+dates = df['Date']
+adj_dates = mdates.datestr2num(dates)
+plt.plot_date(adj_dates, data, '-')
     
-plt.title('Closing Value vs. Date for 30 Top DJIA Equities')
+plt.title('DJIA Close vs. Date, 1985-2020')
 plt.xlabel('Date', fontsize=18)
 plt.ylabel('Close value', fontsize=16)
 plt.show()
 
-# Start with one stock
-stock = 'AMZN'
-metric = 'Close'
-data = df[df['Name'] == stock][metric]
-
-# Choose metric to predict
-# input('Please enter the metric you want to predict: ')
-# metric = metric.capitalize()
-
 # Check for, and handle, missing values 
 if data.isna().sum():
-    pass
+    print('Alert! Missing data')
     # do something to handle empty data rows 
 
 # Normalization is not ideal since closing values trend upwards. 
@@ -51,32 +39,42 @@ if data.isna().sum():
 
 # Convert data into format acceptable to Keras
 # Input must be 3D ndarray of shape (samples x time steps x features)
-data = data.to_numpy()
-
+train_fraction = 0.80
 sequence_length = 30
 
-#Define test set 
-test_fraction = 0.80
-num_test_samples = ceil(len(data) * test_fraction)
-x_train = np.array([data[i - sequence_length] for i in range(sequence_length, num_test_samples)])
-y_train = np.array([data[i] for i in range(sequence_length, num_test_samples)])
+data = data.to_numpy()
+num_train_samples = ceil(len(data) * train_fraction)
+train_data = data[:num_train_samples]
+test_data = data[num_train_samples:]
 
+# x_train.shape = (7105,30)
+# y_train.shape = (7105,)
+x_train = np.array([train_data[i - sequence_length:i] for i in range(sequence_length, len(train_data))])
+y_train = np.array([train_data[i] for i in range(sequence_length, len(train_data))])
 
-'''
+x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+# x_train.shape should now be (7105,30, 1)
+
+x_test = np.array([test_data[i - sequence_length:i] for i in range(sequence_length, len(test_data))])
+y_test = np.array([test_data[i] for i in range(sequence_length, len(test_data))])
+
 # Build model 
 units = 32
 epochs = 25
-batch_size = 15
+batch_size = 35
 
 model = Sequential()
 model.add(LSTM(
     units = units, 
-    return_sequences = True,
+    input_shape = (sequence_length, 1),
+    return_sequences = False,
     ))
 model.add(Dense(units = 1))
 
 model.compile(optimizer = 'adam',
-              loss = 'mean_squared_error')
+             loss = 'mean_squared_error',
+             metrics = [
+                 'accuracy'])
 
 model.fit(x_train,
           y_train,
@@ -84,9 +82,13 @@ model.fit(x_train,
           batch_size = batch_size
           )
 
+model.summary()
+loss, accuracy = model.evaluate(x_test, y_test)
+print('Test Loss: %f' % (loss))
+print('Test Accuracy: %f' % (accuracy * 100))
+
 # Reshape data 
 
 # Build model 
 
 # Evaluate performance 
-'''

@@ -8,7 +8,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
+from tensorflow.keras.layers import Embedding, LSTM, Activation, Dense, Dropout
 from time import strptime
 from math import ceil
 
@@ -47,48 +47,87 @@ num_train_samples = ceil(len(data) * train_fraction)
 train_data = data[:num_train_samples]
 test_data = data[num_train_samples:]
 
+# Reshape data 
 # x_train.shape = (7105,30)
 # y_train.shape = (7105,)
 x_train = np.array([train_data[i - sequence_length:i] for i in range(sequence_length, len(train_data))])
-y_train = np.array([train_data[i] for i in range(sequence_length, len(train_data))])
+y_train = np.array([train_data[i + 1 - sequence_length: (i + 1)] for i in range(sequence_length, len(train_data))])
 
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+y_train = np.reshape(y_train, (y_train.shape[0], y_train.shape[1], 1))
+
 # x_train.shape should now be (7105,30, 1)
 
 x_test = np.array([test_data[i - sequence_length:i] for i in range(sequence_length, len(test_data))])
-y_test = np.array([test_data[i] for i in range(sequence_length, len(test_data))])
+y_test = np.array([test_data[i + 1 - sequence_length: (i + 1)] for i in range(sequence_length, len(test_data))])
+
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+y_test = np.reshape(y_test, (y_test.shape[0], y_test.shape[1], 1))
+
 
 # Build model 
-units = 32
+units = 15
 epochs = 25
-batch_size = 35
+batch_size = 350
 
-model = Sequential()
-model.add(LSTM(
+# Build model 
+layer_1 = LSTM(
     units = units, 
     input_shape = (sequence_length, 1),
-    return_sequences = False,
-    ))
-model.add(Dense(units = 1))
+    return_sequences = True,
+    )
 
+
+model = Sequential()
+model.add(layer_1)
+model.add(Dense(units = 1))
+# model.add(Activation('linear'))
 model.compile(optimizer = 'adam',
              loss = 'mean_squared_error',
-             metrics = [
-                 'accuracy'])
+             )
 
 model.fit(x_train,
           y_train,
           epochs = epochs, 
-          batch_size = batch_size
+          batch_size = batch_size,
+          # validation_split = 0.05
           )
 
-model.summary()
-loss, accuracy = model.evaluate(x_test, y_test)
-print('Test Loss: %f' % (loss))
-print('Test Accuracy: %f' % (accuracy * 100))
-
-# Reshape data 
-
-# Build model 
-
 # Evaluate performance 
+model.summary()
+loss = model.evaluate(x_test, y_test)
+print('Test Loss: %f' % (loss))
+# print('Test Accuracy: %f' % (accuracy * 100))
+
+history = model.history.history
+
+# =============================================================================
+# plt.plot(history['accuracy'])
+# plt.title('Model Accuracy vs. Epoch')
+# plt.ylabel('accuracy')
+# plt.xlabel('epoch')
+# plt.legend(['Train', 'Test'], loc='upper left')
+# plt.show()
+# =============================================================================
+
+plt.plot(history['loss'])
+plt.title('Model Loss vs. Epoch')
+plt.ylabel('loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Test'], loc='upper left')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

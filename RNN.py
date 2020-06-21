@@ -65,7 +65,7 @@ batch_size = 32
 
 # Describe layers
 LSTM_1 = LSTM(
-    units = 50, 
+    units = 5, 
     input_shape = (x_train.shape[1], 1),
     return_sequences = True,
     )
@@ -75,22 +75,21 @@ model = Sequential()
 model.add(LSTM_1)
 model.add(Dropout(0.2))
 
-model.add(LSTM(units = 50))
+model.add(LSTM(units = 14))
 model.add(Dropout(0.2))
 
 model.add(Dense(1))
 model.compile(loss = 'mean_squared_error', 
              optimizer = 'adam', 
-             metrics = [
-                 'accuracy'])
+             metrics = ['accuracy']
+             )
 
-# =============================================================================
-# early_stopping = EarlyStopping(monitor='val_loss', 
-#                                mode='min', verbose=1, 
-#                                patience = 9,
-#                                restore_best_weights = False
-#                                )
-# =============================================================================
+early_stopping = EarlyStopping(monitor='val_loss', 
+                               mode='min', 
+                               verbose=1, 
+                               patience = 9,
+                               restore_best_weights = False
+                               )
 
 history = model.fit(x_train,
           y_train,
@@ -98,16 +97,14 @@ history = model.fit(x_train,
           batch_size = batch_size,
           verbose = 2, 
           validation_data = (x_test, y_test),
-          # callbacks = [early_stopping],
+          callbacks = [early_stopping],
           )
 
 # Evaluate performance 
 model.summary()
-loss, accuracy = model.evaluate(x_test, y_test, batch_size = batch_size)
+loss = model.evaluate(x_test, y_test, batch_size = batch_size)
 
-print('Test Loss: %f' % (loss))
-print('Test Accuracy: %f' % (accuracy * 100))
-# print('Training stopped after',early_stopping.stopped_epoch,'epochs.')
+print('Training stopped after',early_stopping.stopped_epoch,'epochs.')
 
 plt.plot(history.history['accuracy'])
 plt.title('Model Accuracy vs. Epoch')
@@ -122,4 +119,34 @@ plt.ylabel('loss')
 plt.xlabel('Epoch')
 plt.legend(['Train', 'Test'], loc='upper left')
 plt.show()
+
+prediction = model.predict(x_test)
+prediction = scaler.inverse_transform(prediction)
+
+y_test2 = np.reshape(y_test, (y_test.shape[0], 1))
+y_test = scaler.inverse_transform(y_test2)
+
+plot_points = np.array([i for i in x_test])
+
+# Visualising the results
+plt.plot(y_test, color = 'red', label = 'Real DJIA Close')
+plt.plot(prediction, color = 'blue', label = 'Predicted Close')
+plt.title('Close Prediction')
+plt.xlabel('Time')
+plt.ylabel('DJIA Close')
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
 

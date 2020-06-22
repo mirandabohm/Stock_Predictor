@@ -34,7 +34,7 @@ if data.isna().sum():
     
 # Define the training set
 percent_training = 0.80
-num_training_samples = ceil(percent_training*len(df))
+num_training_samples = ceil(percent_training*len(df)) # 7135
 training_set = df.iloc[:num_training_samples, 5:6].values
 
 # Scale training data
@@ -96,7 +96,8 @@ history = model.fit(x_train,
           epochs = epochs, 
           batch_size = batch_size,
           verbose = 2, 
-          validation_data = (x_test, y_test),
+          validation_split = 0.20,
+          # validation_data = (x_test, y_test),
           callbacks = [early_stopping],
           )
 
@@ -126,17 +127,16 @@ prediction = scaler.inverse_transform(prediction)
 y_test2 = np.reshape(y_test, (y_test.shape[0], 1))
 y_test = scaler.inverse_transform(y_test2)
 
-plot_points = np.array([i for i in x_test])
+test_dates = adj_dates[-1783:]
 
-# Visualising the results
-plt.plot(y_test, color = 'red', label = 'Real DJIA Close')
-plt.plot(prediction, color = 'blue', label = 'Predicted Close')
+# Visualizing the results
+plt.plot_date(test_dates, y_test, '-', linewidth = 2, color = 'red', label = 'Real DJIA Close')
+plt.plot(test_dates, prediction, color = 'blue', label = 'Predicted Close')
 plt.title('Close Prediction')
 plt.xlabel('Time')
 plt.ylabel('DJIA Close')
 plt.legend()
 plt.show()
-
 
 
 

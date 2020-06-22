@@ -42,7 +42,7 @@ scaler = MinMaxScaler(feature_range = (0, 1))
 training_set_scaled = scaler.fit_transform(training_set)
 
 # Some parameters
-sequence_length = 30
+sequence_length = 90
 
 # Build x and y components 
 x_train = np.array([training_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(training_set_scaled))])
@@ -60,12 +60,12 @@ x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) # (7105, 30, 
 y_test = np.array([testing_set_scaled[i, 0] for i in range(sequence_length, len(testing_set_scaled))])
 
 # Build model 
-epochs = 100
+epochs = 50
 batch_size = 32
 
 # Describe layers
 LSTM_1 = LSTM(
-    units = 5, 
+    units = 25, 
     input_shape = (x_train.shape[1], 1),
     return_sequences = True,
     )
@@ -81,7 +81,6 @@ model.add(Dropout(0.2))
 model.add(Dense(1))
 model.compile(loss = 'mean_squared_error', 
              optimizer = 'adam', 
-             metrics = ['accuracy']
              )
 
 early_stopping = EarlyStopping(monitor='val_loss', 
@@ -107,12 +106,14 @@ loss = model.evaluate(x_test, y_test, batch_size = batch_size)
 
 print('Training stopped after',early_stopping.stopped_epoch,'epochs.')
 
-plt.plot(history.history['accuracy'])
-plt.title('Model Accuracy vs. Epoch')
-plt.ylabel('accuracy')
-plt.xlabel('epoch')
-plt.legend(['Train', 'Test'], loc='upper left')
-plt.show()
+# =============================================================================
+# plt.plot(history.history['accuracy'])
+# plt.title('Model Accuracy vs. Epoch')
+# plt.ylabel('accuracy')
+# plt.xlabel('epoch')
+# plt.legend(['Train', 'Test'], loc='upper left')
+# plt.show()
+# =============================================================================
 
 plt.plot(history.history['loss'])
 plt.title('Model Loss vs. Epoch')
@@ -138,15 +139,27 @@ plt.ylabel('DJIA Close')
 plt.legend()
 plt.show()
 
+# Generate future data 
+time_horizon = sequence_length
+# future_lookback = adj_dates[-time_horizon:]
 
+last_n = x_test[-time_horizon:,:,:] # Find last n number of days
+future_prediction = model.predict(last_n)
+future_prediction2 = np.reshape(future_prediction, (future_prediction.shape[0], 1))
+future_prediction3 = scaler.inverse_transform(future_prediction2)
 
+plt.plot(future_prediction3, color = 'blue', label = 'Predicted Close')
+plt.title('Close Prediction')
+plt.xlabel('Time')
+plt.ylabel('DJIA Close')
+plt.legend()
+plt.show()
 
-
-
-
-
-
-
-
-
-
+full_dataset_numpy = np.array(data)
+all_data = np.append(full_dataset_numpy, future_prediction3)
+plt.plot(all_data, color = 'blue', label = 'All data')
+plt.title('All data including predictions')
+plt.xlabel('Time')
+plt.ylabel('DJIA Close')
+plt.legend()
+plt.show()

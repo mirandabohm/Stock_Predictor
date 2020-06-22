@@ -23,6 +23,11 @@ Of note, this set includes recent volatility stemming from the COVID-19 world he
 ## Project Structure
 Datasets will be contained in a subdirectory named 'data.'
 
+## Results
+![Predicted vs. Real DJIA Close Test Values, 2014-2020](images/fig_3.png)
+
+
+
 ## See Also:
 Zou, Zhichao, and Qu, Zihao. "Using LSTM in Stock prediction and Quantitative Trading." 
 http://cs230.stanford.edu/projects_winter_2020/reports/32066186.pdf

@@ -9,6 +9,7 @@ from time import strptime
 from math import ceil
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler 
+from datetime import datetime 
 
 # Load data 
 file = r'DJIA_historical' + '.csv'
@@ -147,14 +148,8 @@ last_n = x_test[-time_horizon:,:,:] # Find last n number of days
 future_prediction = model.predict(last_n)
 future_prediction2 = np.reshape(future_prediction, (future_prediction.shape[0], 1))
 future_prediction3 = scaler.inverse_transform(future_prediction2)
-
-plt.plot(future_prediction3, color = 'blue', label = 'Predicted Close')
-plt.title('Close Prediction')
-plt.xlabel('Time')
-plt.ylabel('DJIA Close')
-plt.legend()
-plt.show()
-
+future_prediction3 = np.reshape(future_prediction3, (future_prediction3.shape[0]))
+ 
 full_dataset_numpy = np.array(data)
 all_data = np.append(full_dataset_numpy, future_prediction3)
 plt.plot(all_data, color = 'blue', label = 'All data')
@@ -163,3 +158,35 @@ plt.xlabel('Time')
 plt.ylabel('DJIA Close')
 plt.legend()
 plt.show()
+
+# Generate dates for future predictions
+# Begin at the last date in the dataset, then add 'time_horizon' many new dates
+last_date = dates.iloc[-1] # String
+timestamp_list = pd.date_range(last_date, periods = time_horizon).tolist() #List of timestamps
+
+# Convert list of timestamps to list of strings 
+datestring_list = [i.strftime("%Y-%m-%d") for i in timestamp_list] #List of strings
+
+# Clip first value, which is already included in the dataset
+datestring2 = mdates.datestr2num(datestring_list)
+
+plt.plot_date(datestring2, future_prediction3, '-', color = 'blue', label = 'Predicted Close')
+plt.title('DJIA Close Prediction')
+plt.xlabel('Date')
+plt.ylabel('Predicted Close')
+plt.xticks(rotation = 45)
+plt.legend()
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+

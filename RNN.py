@@ -11,73 +11,81 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler 
 from datetime import datetime 
 
+# TODO: Model is currently overfitting. 
+
 # Load data 
-file = r'DJIA_historical' + '.csv'
+file = r'DJIA_all_time' + '.csv'
+
 dirname = os.path.dirname(__file__)
 filename = os.path.join((dirname), 'data/' +file)
 df = pd.read_csv(filename)
 
 # Visualize the total dataset
-data = df['Close']
+close_data = df['Close']
 dates = df['Date']
 adj_dates = mdates.datestr2num(dates)
-plt.plot_date(adj_dates, data, '-')
+plt.plot_date(adj_dates, close_data, '-')
     
 plt.title('DJIA Close vs. Date, 1985-2020')
-plt.xlabel('Date', fontsize=18)
-plt.ylabel('Close value', fontsize=16)
+plt.xlabel('Date', fontsize = 18)
+plt.ylabel('Close value', fontsize = 16)
 plt.show()
 
 # Check for, and handle, missing values 
-if data.isna().sum():
+if close_data.isna().sum():
     print('Alert! Missing data')
     # do something to handle empty data rows 
     
 # Define the training set
-percent_training = 0.80
+percent_training: float = 0.80
 num_training_samples = ceil(percent_training*len(df)) # 7135
-training_set = df.iloc[:num_training_samples, 5:6].values
+training_set = df.iloc[:num_training_samples, 5:6].values # (7135, 1)
 
 # Scale training data
 scaler = MinMaxScaler(feature_range = (0, 1))
-training_set_scaled = scaler.fit_transform(training_set)
+training_set_scaled = scaler.fit_transform(training_set) # (7135, 1)
 
 # Some parameters
-sequence_length = 90
+sequence_length: int = 90
 
-# Build x and y components 
-x_train = np.array([training_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(training_set_scaled))])
+# Build x training set (contains example sequences of length sequence_length) 
+x_train = np.array([training_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(training_set_scaled))]) 
+x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) 
+
+# Build y training set (contains targets)
 y_train = np.array([training_set_scaled[i, 0] for i in range(sequence_length, len(training_set_scaled))])
 
-x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) # (7105, 30, 1)
-
-# Define Test Set 
-num_testing_samples = len(df) - x_train.shape[0] # 1813
-testing_set = df.iloc[-num_testing_samples:, 5:6].values
-testing_set_scaled = scaler.fit_transform(testing_set)
+# Define test set 
+num_testing_samples: int = len(df) - x_train.shape[0] 
+testing_set = df.iloc[-num_testing_samples:, 5:6].values # 2D ndarray
+testing_set_scaled = scaler.fit_transform(testing_set) # 2D ndarray
 
 x_test = np.array([testing_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(testing_set_scaled))])
 x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) # (7105, 30, 1)
 y_test = np.array([testing_set_scaled[i, 0] for i in range(sequence_length, len(testing_set_scaled))])
 
-# Build model 
-epochs = 50
-batch_size = 32
+# =============================================================================
+# Define and build model 
+# =============================================================================
 
-# Describe layers
+epochs: int = 150
+batch_size: int = 32
+
 LSTM_1 = LSTM(
-    units = 25, 
+    units = 5, 
     input_shape = (x_train.shape[1], 1),
-    return_sequences = True,
+    return_sequences = False,
     )
-# Output shape is (batch_size, steps, units)
+
+LSTM_2 = LSTM(
+    units = 10
+    )
 
 model = Sequential()
-model.add(LSTM_1)
-model.add(Dropout(0.2))
-
-model.add(LSTM(units = 14))
-model.add(Dropout(0.2))
+model.add(LSTM_1) # Output shape: (batch_size, sequence_length, units)
+model.add(Dropout(0.4))
+# model.add(LSTM_2) # Output shape: 
+# model.add(Dropout(0.2))
 
 model.add(Dense(1))
 model.compile(loss = 'mean_squared_error', 
@@ -86,7 +94,7 @@ model.compile(loss = 'mean_squared_error',
 
 early_stopping = EarlyStopping(monitor='val_loss', 
                                mode='min', 
-                               verbose=1, 
+                               verbose = 1, 
                                patience = 9,
                                restore_best_weights = False
                                )
@@ -103,8 +111,13 @@ history = model.fit(x_train,
 
 # Evaluate performance 
 model.summary()
+
+model.save("model.h5")
+print("Model saved.")
+
 loss = model.evaluate(x_test, y_test, batch_size = batch_size)
 
+# early_stopping.stopped_epoch returns 0 if training didn't stop early. 
 print('Training stopped after',early_stopping.stopped_epoch,'epochs.')
 
 # =============================================================================
@@ -129,7 +142,7 @@ prediction = scaler.inverse_transform(prediction)
 y_test2 = np.reshape(y_test, (y_test.shape[0], 1))
 y_test = scaler.inverse_transform(y_test2)
 
-test_dates = adj_dates[-1783:]
+test_dates = adj_dates[-x_test.shape[0]:]
 
 # Visualizing the results
 plt.plot_date(test_dates, y_test, '-', linewidth = 2, color = 'red', label = 'Real DJIA Close')
@@ -150,7 +163,7 @@ future_prediction2 = np.reshape(future_prediction, (future_prediction.shape[0], 
 future_prediction3 = scaler.inverse_transform(future_prediction2)
 future_prediction3 = np.reshape(future_prediction3, (future_prediction3.shape[0]))
  
-full_dataset_numpy = np.array(data)
+full_dataset_numpy = np.array(close_data)
 all_data = np.append(full_dataset_numpy, future_prediction3)
 plt.plot(all_data, color = 'blue', label = 'All data')
 plt.title('All data including predictions')

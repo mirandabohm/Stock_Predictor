@@ -4,28 +4,29 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
-from time import strptime
+from tensorflow.keras.layers import LSTM, Dense, Dropout
 from math import ceil
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
 from sklearn.preprocessing import MinMaxScaler 
-from datetime import datetime 
 
-# TODO: Model is currently overfitting. 
+# =============================================================================
+# Dataset V1.0: Scalar Closing Values as Labels 
+# =============================================================================
 
 # Load data 
 file = r'DJIA_all_time' + '.csv'
 
 dirname = os.path.dirname(__file__)
 filename = os.path.join((dirname), 'data/' +file)
-df = pd.read_csv(filename)
+df = pd.read_csv(filename) # 2D (examples, 7 features)
 
-# Visualize the total dataset
-close_data = df['Close']
-dates = df['Date']
+#Extract close data and dates
+close_data = df['Close'] # 1D (examples, )
+dates = df['Date'] # 1D (examples, )
 adj_dates = mdates.datestr2num(dates)
-plt.plot_date(adj_dates, close_data, '-')
-    
+
+# Visualize whole dataset
+plt.plot_date(adj_dates, close_data, '-')    
 plt.title('DJIA Close vs. Date, 1985-2020')
 plt.xlabel('Date', fontsize = 18)
 plt.ylabel('Close value', fontsize = 16)
@@ -38,31 +39,57 @@ if close_data.isna().sum():
     
 # Define the training set
 percent_training: float = 0.80
-num_training_samples = ceil(percent_training*len(df)) # 7135
+num_training_samples = ceil(percent_training*len(df)) # int
 training_set = df.iloc[:num_training_samples, 5:6].values # (7135, 1)
 
 # Scale training data
 scaler = MinMaxScaler(feature_range = (0, 1))
-training_set_scaled = scaler.fit_transform(training_set) # (7135, 1)
+training_set_scaled = scaler.fit_transform(training_set) #2D (num_training_samples, 1)
 
 # Some parameters
 sequence_length: int = 90
 
-# Build x training set (contains example sequences of length sequence_length) 
+labels_are_sequences = False
+
+# =============================================================================
+# Dataset V1.0: Scalar Closing Values as Labels 
+# =============================================================================
+
+# Build 3D training set (examples, sequence_length, 1) 
 x_train = np.array([training_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(training_set_scaled))]) 
-x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) 
+x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
 
-# Build y training set (contains targets)
-y_train = np.array([training_set_scaled[i, 0] for i in range(sequence_length, len(training_set_scaled))])
-
-# Define test set 
-num_testing_samples: int = len(df) - x_train.shape[0] 
-testing_set = df.iloc[-num_testing_samples:, 5:6].values # 2D ndarray
-testing_set_scaled = scaler.fit_transform(testing_set) # 2D ndarray
+# Build test sets
+num_testing_samples: int = len(df) - x_train.shape[0] # Scalar 
+testing_set = df.iloc[-num_testing_samples:, 5:6].values # 2D (examples, 1)
+testing_set_scaled = scaler.fit_transform(testing_set) # 2D ndarray (examples, 1)
 
 x_test = np.array([testing_set_scaled[i - sequence_length:i, 0] for i in range(sequence_length, len(testing_set_scaled))])
-x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) # (7105, 30, 1)
-y_test = np.array([testing_set_scaled[i, 0] for i in range(sequence_length, len(testing_set_scaled))])
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) #3D (examples-sequence_length, sequence_length, 1)
+
+if not labels_are_sequences:
+    # Build 1D training labels (examples, )
+    y_train = np.array([training_set_scaled[i, 0] for i in range(sequence_length, len(training_set_scaled))])
+    y_test = np.array([testing_set_scaled[i, 0] for i in range(sequence_length, len(testing_set_scaled))]) # (examples-sequence_length, 1)
+    y_test = np.reshape(y_test, (y_test.shape[0])) #1D (examples, )
+
+# =============================================================================
+# Dataset V2.0: Vectors of Closing Values as Labels 
+# =============================================================================
+
+if labels_are_sequences:
+    y_train, y_test = [], []
+    
+    for i in range(sequence_length, len(training_set_scaled)):
+        y_train.append(training_set_scaled[i + sequence_length: sequence_length*2 + i, 0])
+        y_test.append(testing_set_scaled[i + sequence_length: sequence_length*2 + i, 0])
+    
+    y_train = np.array(list(y_item for y_item in y_train))
+    y_test = np.array(list(y_item for y_item in y_test))
+    # y_train= [training_set_scaled[i + sequence_length: sequence_length*2 + i, 0] for i in range(sequence_length, len(training_set_scaled))]
+    # y_test = [testing_set_scaled[i + sequence_length: sequence_length*2 + i, 0] for i in range(sequence_length, len(testing_set_scaled))] # (examples-sequence_length, 1)
+    # y_test = np.reshape(y_test, (y_test.shape[0])) #1D (examples, )
+
 
 # =============================================================================
 # Define and build model 

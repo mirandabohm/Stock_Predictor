@@ -1,8 +1,10 @@
 
 # Stock Predictor 
 
-## Goal
-- Model index performance on the basis of historical data
+## Introduction 
+Two main approaches exist in the realm of stock market forecasting: quantitative analysis, which is primarily informed by mathematical or statistical models, and fundamental analysis, which is substantiated by domain insight and company "fundamentals" (i.e., past financial statements, management information, balance sheets, etc.). 
+
+In this project I will attempt to model the performance of the Dow Jones Industrial Average (.DJIA) via quantitative techniques. Expand to predict the S&P500 Index (.INX) and other indexes. Finally, infer movements of individual equities. 
 
 ##  Offshoots
 - If possible, find and model Depression-era-specific data

@@ -1,6 +1,9 @@
 # This .gitignore file from Github's .gitignore templates
 # Link here: https://github.com/github/gitignore
 
+# subdirectories
+ignore/
+
 # Mac DS_Store files
 .DS_Store
 

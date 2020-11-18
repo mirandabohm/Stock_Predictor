@@ -31,13 +31,15 @@ If this isn't your first time using Anaconda, please update conda first using
 ### Virtual Environments are Snazzy
 Before beginning, you may find it useful to create a virtual environment within your conda installation. A virtual environment functions like a "sandbox" such that any modules or libraries you install are isolated from your other system installations. It could allow, for example, two versions of Numpy to co-exist on the same machine, without any messy interactions. 
 
-To see a list of virtual environments already installed on your system, enter this into your Anaconda shell (on Windows) or Bash terminal (Mac/Linux):
+To see a list of virtual environments already installed on your system, enter this into your Anaconda shell (on Windows) or Terminal (Mac/Linux):
 
 ``` $ conda env list ``` 
 
-![Conda Shell conda env list](images/virtualenv1.png)
+![Conda Shell Windows conda env list](images/virtualenv1.png)
 
-Note the \* (asterisk), which indicates the environment that is currently activated. The active virtual environment also prefixes the command line with its name in (parenthesis). As you can see in the image above, we are currently in (tfgpu) on my local machine.
+![Terminal conda env list](images/virtualenv2.png)
+
+Note the \* (asterisk), which indicates the environment that is currently activated. The active virtual environment also prefixes the command line with its name in (parenthesis). In the first image (Windows, green text), the active environment is (tfgpu). On the lower image (MacOS, white text), we are in (base).
 
 If you would like to create new environment, use the following code - and replace 'environmentname' with the name of your choice:
 

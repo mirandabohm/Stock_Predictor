@@ -12,7 +12,7 @@ In this project I will attempt to model the performance of the Dow Jones Industr
 - Train with data surrounding turbulent elections
 
 ## Data 
-The model was trained on Dow Jones Industrial Average data provided by Yahoo! Finance for the dates Jan. 28, 1985, through June 16, 2020. 
+The model was trained on Dow Jones Industrial Average data provided by Yahoo! Finance for the dates Jan. 28, 1985, through the present date (most current data pulled automatically). 
 
 ![DJIA Close Values, 1985-2020](images/fig_2.png)
 
@@ -86,7 +86,7 @@ Numpy:
 
 Yahoo Finance\*: 
 
-``` $ pip install pandas ```
+``` $ pip install yfinance ```
 
 \* Please note that the conda distribution of yfinance is not functional as of November 2011, and that ``` $ conda install yfinance $ ``` will not work.
 
@@ -107,11 +107,9 @@ Datasets will be contained in a subdirectory named 'data.'
 
 ## See Also:
 
-Anaconda Docs
-https://docs.anaconda.com/
+Anaconda Docs: https://docs.anaconda.com/
 
-Yahoo! Finance on PyPi
-https://pypi.org/project/yfinance/
+Yahoo! Finance on PyPi: https://pypi.org/project/yfinance/
 
 Zou, Zhichao, and Qu, Zihao. "Using LSTM in Stock prediction and Quantitative Trading." 
 http://cs230.stanford.edu/projects_winter_2020/reports/32066186.pdf

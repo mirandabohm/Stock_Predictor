@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import get_data 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense, Dropout
 from math import ceil
@@ -90,7 +91,6 @@ if labels_are_sequences:
     # y_test = [testing_set_scaled[i + sequence_length: sequence_length*2 + i, 0] for i in range(sequence_length, len(testing_set_scaled))] # (examples-sequence_length, 1)
     # y_test = np.reshape(y_test, (y_test.shape[0])) #1D (examples, )
 
-
 # =============================================================================
 # Define and build model 
 # =============================================================================
@@ -157,6 +157,7 @@ print('Training stopped after',early_stopping.stopped_epoch,'epochs.')
 # =============================================================================
 
 plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
 plt.title('Model Loss vs. Epoch')
 plt.ylabel('loss')
 plt.xlabel('Epoch')
@@ -174,7 +175,7 @@ test_dates = adj_dates[-x_test.shape[0]:]
 # Visualizing the results
 plt.plot_date(test_dates, y_test, '-', linewidth = 2, color = 'red', label = 'Real DJIA Close')
 plt.plot(test_dates, prediction, color = 'blue', label = 'Predicted Close')
-plt.title('Close Prediction')
+plt.title('Test Data: Close Prediction')
 plt.xlabel('Time')
 plt.ylabel('DJIA Close')
 plt.legend()

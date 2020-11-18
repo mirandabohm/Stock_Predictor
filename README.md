@@ -41,6 +41,8 @@ To see a list of virtual environments already installed on your system, enter th
 
 Note the \* (asterisk), which indicates the environment that is currently activated. The active virtual environment also prefixes the command line with its name in (parenthesis). In the first image (Windows, green text), the active environment is (tfgpu). On the lower image (MacOS, white text), we are in (base).
 
+And yes, Wintermute is a reference to the brilliant cyberpunk-futurist William Gibson. 
+
 If you would like to create new environment, use the following code - and replace 'environmentname' with the name of your choice:
 
 ``` $ conda create --name environmentname ``` 

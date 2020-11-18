@@ -7,15 +7,14 @@ Two main approaches exist in the realm of stock market forecasting: quantitative
 In this project I will attempt to model the performance of the Dow Jones Industrial Average (.DJIA) via quantitative techniques. Expand to predict the S&P500 Index (.INX) and other indexes. Finally, infer movements of individual equities. 
 
 ##  Offshoots
-- If possible, find and model Depression-era-specific data
-- Compare predictions made via sentiment analysis
+- Train with Depression-era-specific data
+- Train with sentiment analysis scores scraped from major sources of world news (Reddit is a good candidate, as it represents the "pulse" of the internet).
+- Train with data surrounding turbulent elections
 
 ## Data 
 The model was trained on Dow Jones Industrial Average data provided by Yahoo! Finance for the dates Jan. 28, 1985, through June 16, 2020. 
 
 ![DJIA Close Values, 1985-2020](images/fig_2.png)
-
-https://finance.yahoo.com/quote/%5EDJI/history?period1=475804800&period2=1592352000&interval=1d&filter=history&frequency=1d
 
 Of note, this set includes recent volatility stemming from the COVID-19 world health crisis, as well as data from the 2008 Financial Crisis. The goal is to determine total market trends in quarters II and III with a quantifiable likelihood. 
 
@@ -38,7 +37,9 @@ To see a list of virtual environments already installed on your system, enter th
 
 ![Conda Shell conda env list](images/virtualenv1.png)
 
-Note the \* (asterisk), which indicates the environment that is currently activated. If you would like to create new environment, use the following code - and replace 'environmentname' with the name of your choice:
+Note the \* (asterisk), which indicates the environment that is currently activated. The active virtual environment also prefixes the command line with its name in (parenthesis). As you can see in the image above, we are currently in (tfgpu) on my local machine.
+
+If you would like to create new environment, use the following code - and replace 'environmentname' with the name of your choice:
 
 ``` $ conda create --name environmentname ``` 
 
@@ -46,7 +47,7 @@ As mentioned above, only one virtual environment can be active per terminal sess
 
 ``` $ conda activate environmentname ```
 
-Read the documentation here: ![VirtualEnvs in Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
+Read the documentation here: [VirtualEnvs in Anaconda](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)
 
 ### Check Necessary Libraries 
 You'll need the libraries listed below to run this project on your local machine. Before installing again, you can check whether any of these is already installed on your system. In your shell of choice, enter the following commands, replacing 'numpy' as needed with each relevant module:
@@ -83,18 +84,31 @@ Yahoo Finance\*:
 
 ``` $ pip install pandas ```
 
-\* Please note that the conda distribution of yfinance is not functional as of November 2011, and that ``` $ conda install yfinance $ will not work. ```
-
+\* Please note that the conda distribution of yfinance is not functional as of November 2011, and that ``` $ conda install yfinance $ ``` will not work.
 
 ## Project Structure
 Datasets will be contained in a subdirectory named 'data.'
 
+### Files
+**get_data.py**: fetch most up-to-date stock information for a selected ticker and write this to a .csv, to be used by the model. 
+
+**RNN.py**: builds and trains the LSTM model, makes predictions, and plots results. 
+
+**model.h5**: a file containing a pre-saved, already-trained model. This file is created when RNN.py is run. Writing and loading a .h5 model prevents the need to perform training with every use of the predictor; i.e., RNN.py does not need to be explicitly run for every prediction. 
+
+**run_me.py**: loads **model.h5** file (see above). Ultimately, this will be the only file that will need to be manually run. 
+
 ## Results
 ![Predicted vs. Real DJIA Close Test Values, 2014-2020](images/fig_3.png)
 
-
-
 ## See Also:
+
+Anaconda Docs
+https://docs.anaconda.com/
+
+Yahoo! Finance on PyPi
+https://pypi.org/project/yfinance/
+
 Zou, Zhichao, and Qu, Zihao. "Using LSTM in Stock prediction and Quantitative Trading." 
 http://cs230.stanford.edu/projects_winter_2020/reports/32066186.pdf
 

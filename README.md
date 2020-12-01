@@ -4,7 +4,7 @@
 ## Introduction 
 Two main approaches exist in the realm of stock market forecasting: quantitative analysis, which is primarily informed by mathematical or statistical models, and fundamental analysis, which is substantiated by domain insight and company "fundamentals" (i.e., past financial statements, management information, balance sheets, etc.). 
 
-In this project I will attempt to model the performance of the Dow Jones Industrial Average (.DJIA) via quantitative techniques. Expand to predict the S&P500 Index (.INX) and other indexes. Finally, infer movements of individual equities. 
+In this project I will attempt to model the performance of the Dow Jones Industrial Average (.DJIA) via quantitative techniques. This project will be expanded upon to model other indexes, such as the S&P500 (.INX) as well as individual equities. At their core, these problems are addressable by the same general type of model. 
 
 ##  Offshoots
 - Train with Depression-era-specific data
